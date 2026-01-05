@@ -25,12 +25,41 @@ def view_expenses():
     else:
         print("No expenses found.")
 
+def query_expenses(editchoice):
+    try:
+        id_expense = int(editchoice)
+    except (ValueError, TypeError):
+        return None
+    c.execute("SELECT * FROM expenses WHERE id = ?", (id_expense,))
+    return c.fetchone()
+
+def update_expenses(id_, new_amount=None, new_desc=None, new_date=None):
+    fields = []
+    params = []
+    if new_amount is not None:
+        fields.append("amount = ?")
+        params.append(new_amount)
+    if new_desc is not None:
+        fields.append("description = ?")
+        params.append(new_desc)
+    if new_date is not None:
+        fields.append("date = ?")
+        params.append(new_date)
+    if not fields:
+        return False
+    params.append(id_)
+    sql = "UPDATE expenses SET " + ", ".join(fields) + " WHERE id = ?"
+    c.execute(sql, tuple(params))
+    conn.commit()
+    return c.rowcount > 0
+
 def main():
     while True:
         print("\nExpense Tracker")
         print("1. Add Expense")
         print("2. View Expenses")
-        print("3. Quit")
+        print("3. Update Expenses")
+        print("4. Quit")
 
         choice = input("Enter your choice: ")
 
@@ -46,7 +75,43 @@ def main():
             view_expenses()
 
         elif choice == '3':
-            print("Goodbye!")
+            print("\nSelect Expenses That You Want To Modify")
+            view_expenses()
+            
+            # find id
+            while True:
+                editchoice = input("Enter id: ").strip()
+                row = query_expenses(editchoice)
+                if row:
+                    print("Found:", row)
+                    id_to_edit = row[0]
+                    break
+                print("id not found please try again")
+
+            #input new amount 
+            try:
+                newamountinput = input("New amount (leave blank to keep current): ").strip()
+                newamount = float(newamountinput) if newamountinput else None
+            except ValueError:
+                print("Invalid amount entered. Update cancelled.")
+                continue
+            #input new description
+            newdescription = input("New description (leave blank to keep current): ").strip() or None
+            dateinput = input("New date YYYY-MM-DD (leave blank to set to today's date): ").strip()
+            if dateinput:
+                newdate = dateinput
+            else:
+                newdate = datetime.datetime.now().strftime("%Y-%m-%d")
+
+            success = update_expenses(id_to_edit, newamount, newdescription, newdate)
+            if success:
+                print("Expense updated successfully.")
+            else:
+                print("No changes made or update failed.")
+            
+
+        elif choice == '4':
+            print("Goodbye")
             break
 
         else:
