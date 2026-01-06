@@ -25,9 +25,9 @@ def view_expenses():
     else:
         print("No expenses found.")
 
-def query_expenses(editchoice):
+def query_expenses(querychoice):
     try:
-        id_expense = int(editchoice)
+        id_expense = int(querychoice)
     except (ValueError, TypeError):
         return None
     c.execute("SELECT * FROM expenses WHERE id = ?", (id_expense,))
@@ -53,13 +53,18 @@ def update_expenses(id_, new_amount=None, new_desc=None, new_date=None):
     conn.commit()
     return c.rowcount > 0
 
+def delete_expenses(id_):
+    c.execute("DELETE FROM expenses WHERE id = ?", (id_,))
+    conn.commit()
+
 def main():
     while True:
         print("\nExpense Tracker")
         print("1. Add Expense")
         print("2. View Expenses")
         print("3. Update Expenses")
-        print("4. Quit")
+        print("4. Delete Expenses")
+        print("5. Quit")
 
         choice = input("Enter your choice: ")
 
@@ -80,8 +85,8 @@ def main():
             
             # find id
             while True:
-                editchoice = input("Enter id: ").strip()
-                row = query_expenses(editchoice)
+                querychoice = input("Enter id: ").strip()
+                row = query_expenses(querychoice)
                 if row:
                     print("Found:", row)
                     id_to_edit = row[0]
@@ -111,6 +116,29 @@ def main():
             
 
         elif choice == '4':
+            print("\nSelect Expenses That You Want To Delete")
+            view_expenses()
+
+            while True:
+                querychoice = input("Enter id: ").strip()
+                row = query_expenses(querychoice)
+                if row:
+                    print("Found:", row)
+                    id_to_delete = row[0]
+                    break
+                print("id not found please try again")
+
+            confirmdeletechoice = input("Are You Sure?")
+
+            if confirmdeletechoice == "yes":
+                delete_expenses(id_to_delete)
+                print("The Expense Has Been Deleted Sucessfully")
+            elif confirmdeletechoice == "no":
+                print("Delete Is Cancelled")
+                continue
+            
+
+        elif choice == '5':
             print("Goodbye")
             break
 
