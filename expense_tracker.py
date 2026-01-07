@@ -57,6 +57,13 @@ def delete_expenses(id_):
     c.execute("DELETE FROM expenses WHERE id = ?", (id_,))
     conn.commit()
 
+def sum_expenses():
+    c.execute("SELECT strftime('%Y-%m', date) AS month, SUM(amount) FROM expenses GROUP BY month ORDER BY month")
+    sumarry = c.fetchall()
+    if sumarry:
+        for month, total in sumarry:
+            print(f"{month}: {total:.2f}")
+
 def main():
     while True:
         print("\nExpense Tracker")
@@ -64,7 +71,8 @@ def main():
         print("2. View Expenses")
         print("3. Update Expenses")
         print("4. Delete Expenses")
-        print("5. Quit")
+        print("5. Expenses Summary")
+        print("6. Quit")
 
         choice = input("Enter your choice: ")
 
@@ -78,6 +86,7 @@ def main():
         elif choice == '2':
             print("\nAll Expenses:")
             view_expenses()
+            input("Press Any To Continue")
 
         elif choice == '3':
             print("\nSelect Expenses That You Want To Modify")
@@ -111,10 +120,10 @@ def main():
             success = update_expenses(id_to_edit, newamount, newdescription, newdate)
             if success:
                 print("Expense updated successfully.")
+                input("Press Any Key To Continue")
             else:
                 print("No changes made or update failed.")
             
-
         elif choice == '4':
             print("\nSelect Expenses That You Want To Delete")
             view_expenses()
@@ -133,12 +142,17 @@ def main():
             if confirmdeletechoice == "yes":
                 delete_expenses(id_to_delete)
                 print("The Expense Has Been Deleted Sucessfully")
+                input("Press Any Key To Continue")
             elif confirmdeletechoice == "no":
                 print("Delete Is Cancelled")
-                continue
-            
+                input("Press Any To Continue")
 
         elif choice == '5':
+            print("\nExpenses Summary:")
+            sum_expenses()
+            input("Press Any Key To Continue")
+
+        elif choice == '6':
             print("Goodbye")
             break
 
