@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import csv
 
 # Connect to SQLite database
 conn = sqlite3.connect('expenses.db')
@@ -64,6 +65,19 @@ def sum_expenses():
         for month, total in sumarry:
             print(f"{month}: {total:.2f}")
 
+def print_expenses_csv():
+    filename = "expenses.csv"
+    c.execute("SELECT * FROM expenses")
+    rows = c.fetchall()
+    if not rows:
+        print("No expenses to export.")
+        return
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(["id", "amount", "description", "date"])
+        csv_writer.writerows(rows)
+    print(f"Exported {len(rows)} rows to {filename}")
+
 def main():
     while True:
         print("\nExpense Tracker")
@@ -72,7 +86,8 @@ def main():
         print("3. Update Expenses")
         print("4. Delete Expenses")
         print("5. Expenses Summary")
-        print("6. Quit")
+        print("6. Export CSV")
+        print("7. Quit")
 
         choice = input("Enter your choice: ")
 
@@ -153,9 +168,12 @@ def main():
             input("Press Any Key To Continue")
 
         elif choice == '6':
+            print("\nExporting expenses to CSV:")
+            print_expenses_csv()
+            input("Press Any Key To Continue")
+        elif choice == '7':
             print("Goodbye")
             break
-
         else:
             print("Invalid choice. Please try again.")
 
